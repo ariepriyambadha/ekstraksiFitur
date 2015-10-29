@@ -1,24 +1,29 @@
 import urllib2
-import requests
-from bs4 import BeautifulSoup
 
 #if using proxy its.ac.id
-def connProxy():
+def conn_proxy():
     proxy = urllib2.ProxyHandler({'http':'http://arie.priyambadha10@mhs.if.its.ac.id:118957592@proxy.its.ac.id:8080'})
     auth = urllib2.HTTPBasicAuthHandler()
     opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
     urllib2.install_opener(opener)
 
 #get domain name from raw url
-def getDomainName(url):
-    indexDoubleSlash = url.find("/") + 1
-    subUrl = url[indexDoubleSlash + 1:]
-    if "/" in subUrl:
-        domainName = subUrl[:subUrl.find("/")]
+def get_domain(url):
+    index_double_slash = url.find("/") + 1
+    sub_url = url[index_double_slash+ 1:]
+    if "/" in sub_url:
+        domain= sub_url[:sub_url.find("/")]
     else:
-        domainName = subUrl
+        domain= sub_url
 
-    return domainName
+    return domain
+
+#Fitur 6 - Slash in Page Address
+def fitur_6(url):
+    if (url.count("/")-2) >= 5:
+        return -1
+    else:
+        return 1
 
 if __name__ == "__main__":
     #fake user agents
@@ -33,6 +38,7 @@ if __name__ == "__main__":
         url = data[n]
         try:
             print data[n]
+            print fitur_6(data[n])
         except:
             pass
 
