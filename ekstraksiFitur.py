@@ -32,22 +32,9 @@ if __name__ == "__main__":
     while n < len(data):
         url = data[n]
         try:
-            r = requests.get(url, headers=headers)
-            print url
-            print r.cookies
-
-            request = urllib2.Request(url, headers = headers)
-            response = urllib2.urlopen(request)
-            html = response.read()
-            soup = BeautifulSoup(html)
-            anchor = soup.find_all("form")
-
-            print url
-            print response.getcode()
-            for i in anchor:
-                print i["action"]
-
+            print data[n]
         except:
             pass
 
         n += 1
+    print n
