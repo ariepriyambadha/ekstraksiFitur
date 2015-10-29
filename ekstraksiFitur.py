@@ -17,5 +17,4 @@ with open("dataset.txt", "r") as file:
 
 n = 0
 while n < len(data):
-    print "asdf"
-    print "asdfasdfasdfasdf"
+
