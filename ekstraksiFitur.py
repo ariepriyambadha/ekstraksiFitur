@@ -2,6 +2,7 @@ import urllib2
 import requests
 import socket
 
+
 #if using proxy its.ac.id
 def conn_proxy():
     proxy = urllib2.ProxyHandler({'http':'http://arie.priyambadha10@mhs.if.its.ac.id:118957592@proxy.its.ac.id:8080'})
@@ -49,7 +50,6 @@ def fitur_13(url):
             flag = 1
         else:
             #foreign domain
-            print i
             flag = -1
             return flag
 
@@ -57,6 +57,14 @@ def fitur_13(url):
         return 2
     else:
         return 1
+
+#Fitur 14 - SSL Certificate
+def fitur_14(url):
+    try:
+        requests.get(url, verify = True)
+        return 1
+    except:
+        return -1
 
 if __name__ == "__main__":
     #fake user agents
@@ -73,7 +81,9 @@ if __name__ == "__main__":
         try:
             #print fitur_6(data[n])
             #print fitur_13(data[n])
-            print get_domain(data[n])
+            #print get_domain(data[n])
+            print url
+            print fitur_14(url)
 
         except:
             pass
