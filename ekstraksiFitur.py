@@ -1,5 +1,6 @@
 import urllib2
 import requests
+import socket
 
 #if using proxy its.ac.id
 def conn_proxy():
@@ -10,16 +11,23 @@ def conn_proxy():
 
 #get domain from raw url
 def get_domain(url):
-    if("http://" in url):
+    if(url[:7] == "http://" or url[:8] == "https://"):
         index_double_slash = url.find("/") + 1
-        sub_url = url[index_double_slash+ 1:]
+        sub_url = url[index_double_slash + 1:]
 
     if "/" in sub_url:
-        domain= sub_url[:sub_url.find("/")]
+        domain = sub_url[:sub_url.find("/")]
     else:
-        domain= sub_url
+        domain = sub_url
 
-    return domain
+    try:
+        socket.inet_aton(domain)
+        return domain
+    except:
+        if(domain.count(".") == 1):
+            return domain
+        else:
+            return domain
 
 #Fitur 6 - Slash in Page Address
 def fitur_6(url):
@@ -33,6 +41,7 @@ def fitur_13(url):
     request = requests.get(url, headers = headers)
     cookies = request.cookies.list_domains()
 
+    #initial no cookies found
     flag = 2
     for i in cookies:
         if(get_domain(i) in url):
@@ -58,12 +67,13 @@ if __name__ == "__main__":
         data = file.readlines()
 
     n = 0
+    conn_proxy()
     while n < len(data):
         url = data[n]
         try:
-            print data[n]
             #print fitur_6(data[n])
-            print fitur_13(data[n])
+            #print fitur_13(data[n])
+            print get_domain(data[n])
 
         except:
             pass
