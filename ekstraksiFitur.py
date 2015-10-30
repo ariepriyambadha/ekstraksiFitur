@@ -1,4 +1,5 @@
 import urllib2
+import requests
 
 #if using proxy its.ac.id
 def conn_proxy():
@@ -7,10 +8,12 @@ def conn_proxy():
     opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
     urllib2.install_opener(opener)
 
-#get domain name from raw url
+#get domain from raw url
 def get_domain(url):
-    index_double_slash = url.find("/") + 1
-    sub_url = url[index_double_slash+ 1:]
+    if("http://" in url):
+        index_double_slash = url.find("/") + 1
+        sub_url = url[index_double_slash+ 1:]
+
     if "/" in sub_url:
         domain= sub_url[:sub_url.find("/")]
     else:
@@ -20,8 +23,29 @@ def get_domain(url):
 
 #Fitur 6 - Slash in Page Address
 def fitur_6(url):
-    if (url.count("/")-2) >= 5:
+    if(url.count("/")-2) >= 5:
         return -1
+    else:
+        return 1
+
+#Fitur 13 - Cookie
+def fitur_13(url):
+    request = requests.get(url, headers = headers)
+    cookies = request.cookies.list_domains()
+
+    flag = 2
+    for i in cookies:
+        if(get_domain(i) in url):
+            #own domain
+            flag = 1
+        else:
+            #foreign domain
+            print i
+            flag = -1
+            return flag
+
+    if(flag == 2):
+        return 2
     else:
         return 1
 
@@ -38,7 +62,9 @@ if __name__ == "__main__":
         url = data[n]
         try:
             print data[n]
-            print fitur_6(data[n])
+            #print fitur_6(data[n])
+            print fitur_13(data[n])
+
         except:
             pass
 
