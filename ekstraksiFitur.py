@@ -59,11 +59,51 @@ def fitur_13(url):
 
 #Fitur 14 - SSL Certificate
 def fitur_14(url):
-    try:
-        requests.get(url, cert = "certs.der")
-        return 1
-    except:
+    if(url[:5] == "https"):
+        try:
+            requests.get(url, cert = "certs.pem", verify = True)
+            return 1
+        except:
+            return -1
+    else:
         return -1
+
+"""
+Response Codes
+
+The server generates the following HTTP response codes for the GET request:
+
+    200: The queried URL is either phishing, malware, or both; see the response body for the specific type.
+    204: The requested URL is legitimate and no response body is returned.
+    400: Bad Request—The HTTP request was not correctly formed.
+    401: Not Authorized—The API key is not authorized.
+    503: Service Unavailable—The server cannot handle the request. Besides the normal server failures, this can also indicate that the client has been “throttled” for sending too many requests.
+
+Possible reasons for the Bad Request (HTTP code 400):
+
+    Not all required CGI parameters are specified.
+    Some of the CGI parameters are empty.
+    The queried URL is not a valid URL or not properly encoded.
+
+
+"""
+
+#Fitur 17 - Blacklist
+def fitur_17(url):
+    key = "AIzaSyBKfwvzDYmnSM1yM9dZkZQ08PxfG99n0hQ"
+    url = "https://sb-ssl.google.com/safebrowsing/api/lookup?client=skripsi_phishing&key=" + key + "&appver=1.0.0&pver=3.1&url=" + url
+
+    try:
+        print urllib2.urlopen(url).getcode()
+        request = urllib2.urlopen(url).read()
+    except:
+        print "GAGAL CEK BLACKLIST"
+
+    print request
+    if(request == "phishing" or request == "malware"):
+        return -1
+    else:
+        return 1
 
 if __name__ == "__main__":
     #fake user agents
@@ -82,7 +122,7 @@ if __name__ == "__main__":
             #print fitur_13(data[n])
             #print get_domain(data[n])
             print url
-            print fitur_14(url)
+            print fitur_17(url)
 
         except:
             pass
