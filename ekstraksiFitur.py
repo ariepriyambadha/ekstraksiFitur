@@ -87,19 +87,16 @@ Possible reasons for the Bad Request (HTTP code 400):
 
 
 """
-
 #Fitur 17 - Blacklist
 def fitur_17(url):
     key = "AIzaSyBKfwvzDYmnSM1yM9dZkZQ08PxfG99n0hQ"
     url = "https://sb-ssl.google.com/safebrowsing/api/lookup?client=skripsi_phishing&key=" + key + "&appver=1.0.0&pver=3.1&url=" + url
 
     try:
-        print urllib2.urlopen(url).getcode()
         request = urllib2.urlopen(url).read()
     except:
         print "GAGAL CEK BLACKLIST"
 
-    print request
     if(request == "phishing" or request == "malware"):
         return -1
     else:
