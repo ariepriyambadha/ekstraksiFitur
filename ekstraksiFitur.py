@@ -15,7 +15,7 @@ def get_domain(url):
         index_double_slash = url.find("/") + 1
         sub_url = url[index_double_slash + 1:]
 
-    if "/" in sub_url:
+    if("/" in sub_url):
         domain = sub_url[:sub_url.find("/")]
     else:
         domain = sub_url
@@ -74,7 +74,7 @@ if __name__ == "__main__":
         data = file.readlines()
 
     n = 0
-    #onn_proxy()
+    #conn_proxy()
     while n < len(data):
         url = data[n]
         try:
