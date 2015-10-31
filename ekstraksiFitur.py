@@ -2,7 +2,6 @@ import urllib2
 import requests
 import socket
 
-
 #if using proxy its.ac.id
 def conn_proxy():
     proxy = urllib2.ProxyHandler({'http':'http://arie.priyambadha10@mhs.if.its.ac.id:118957592@proxy.its.ac.id:8080'})
@@ -61,7 +60,7 @@ def fitur_13(url):
 #Fitur 14 - SSL Certificate
 def fitur_14(url):
     try:
-        requests.get(url, verify = True)
+        requests.get(url, cert = "certs.der")
         return 1
     except:
         return -1
@@ -75,7 +74,7 @@ if __name__ == "__main__":
         data = file.readlines()
 
     n = 0
-    conn_proxy()
+    #onn_proxy()
     while n < len(data):
         url = data[n]
         try:
