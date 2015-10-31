@@ -94,15 +94,16 @@ def fitur_15(url):
     cx = "015058113956565325925"
     q = url
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1"}
+
     request = urllib2.Request("https://www.googleapis.com/customsearch/v1?key=" + key + "&cx=" + cx + ":awgpmf5zb5k&q=" + q, headers = headers)
     response = urllib2.urlopen(request)
     data = json.load(response)
     result = data["items"]
+
     for i in result:
         print i["link"]
 
 #Fitur 17 - Blacklist
-#test
 def fitur_17(url):
     key = "AIzaSyBKfwvzDYmnSM1yM9dZkZQ08PxfG99n0hQ"
     url = "https://sb-ssl.google.com/safebrowsing/api/lookup?client=skripsi_phishing&key=" + key + "&appver=1.0.0&pver=3.1&url=" + url
