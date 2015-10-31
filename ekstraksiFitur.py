@@ -2,6 +2,7 @@
 import urllib2
 import requests
 import socket
+import json
 
 #if using proxy its.ac.id
 def conn_proxy():
@@ -62,7 +63,7 @@ def fitur_13(url):
 def fitur_14(url):
     if(url[:5] == "https"):
         try:
-            requests.get(url, verify = True)
+            requests.get(url, cert = "certs.pem", verify = True)
             return 1
         except:
             return -1
@@ -86,6 +87,20 @@ Possible reasons for the Bad Request (HTTP code 400):
     Some of the CGI parameters are empty.
     The queried URL is not a valid URL or not properly encoded.
 """
+
+#Fitur 15 - Search Engine
+def fitur_15(url):
+    key = "AIzaSyBKfwvzDYmnSM1yM9dZkZQ08PxfG99n0hQ"
+    cx = "015058113956565325925"
+    q = url
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1"}
+    request = urllib2.Request("https://www.googleapis.com/customsearch/v1?key=" + key + "&cx=" + cx + ":awgpmf5zb5k&q=" + q, headers = headers)
+    response = urllib2.urlopen(request)
+    data = json.load(response)
+    result = data["items"]
+    for i in result:
+        print i["link"]
+
 #Fitur 17 - Blacklist
 def fitur_17(url):
     key = "AIzaSyBKfwvzDYmnSM1yM9dZkZQ08PxfG99n0hQ"
@@ -118,7 +133,7 @@ if __name__ == "__main__":
             #print fitur_13(data[n])
             #print get_domain(data[n])
             print url
-            print fitur_14(url)
+            print fitur_15(url)
 
         except:
             pass
