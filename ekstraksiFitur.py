@@ -102,6 +102,7 @@ def fitur_15(url):
         print i["link"]
 
 #Fitur 17 - Blacklist
+#test
 def fitur_17(url):
     key = "AIzaSyBKfwvzDYmnSM1yM9dZkZQ08PxfG99n0hQ"
     url = "https://sb-ssl.google.com/safebrowsing/api/lookup?client=skripsi_phishing&key=" + key + "&appver=1.0.0&pver=3.1&url=" + url
