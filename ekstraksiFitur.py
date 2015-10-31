@@ -61,14 +61,30 @@ def fitur_13(url):
 
 #Fitur 14 - SSL Certificate
 def fitur_14(url):
-    if(url[:5] == "https"):
+    if(url[:4] == "http"):
         try:
-            requests.get(url, cert = "certs.pem", verify = True)
+            #certs.pem : CA Bundle is extracted from the Mozilla Included CA Certificate List.
+            requests.get(url)
             return 1
         except:
             return -1
     else:
         return -1
+
+#Fitur 15 - Search Engine
+def fitur_15(url):
+    key = "AIzaSyBKfwvzDYmnSM1yM9dZkZQ08PxfG99n0hQ"
+    cx = "015058113956565325925"
+    q = url
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1"}
+
+    request = urllib2.Request("https://www.googleapis.com/customsearch/v1?key=" + key + "&cx=" + cx + ":awgpmf5zb5k&q=" + q, headers = headers)
+    response = urllib2.urlopen(request)
+    data = json.load(response)
+    result = data["items"]
+
+    for i in result:
+        print i["link"]
 
 """
 Response Codes
@@ -87,22 +103,6 @@ Possible reasons for the Bad Request (HTTP code 400):
     Some of the CGI parameters are empty.
     The queried URL is not a valid URL or not properly encoded.
 """
-
-#Fitur 15 - Search Engine
-def fitur_15(url):
-    key = "AIzaSyBKfwvzDYmnSM1yM9dZkZQ08PxfG99n0hQ"
-    cx = "015058113956565325925"
-    q = url
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1"}
-
-    request = urllib2.Request("https://www.googleapis.com/customsearch/v1?key=" + key + "&cx=" + cx + ":awgpmf5zb5k&q=" + q, headers = headers)
-    response = urllib2.urlopen(request)
-    data = json.load(response)
-    result = data["items"]
-
-    for i in result:
-        print i["link"]
-
 #Fitur 17 - Blacklist
 def fitur_17(url):
     key = "AIzaSyBKfwvzDYmnSM1yM9dZkZQ08PxfG99n0hQ"
@@ -135,7 +135,7 @@ if __name__ == "__main__":
             #print fitur_13(data[n])
             #print get_domain(data[n])
             print url
-            print fitur_15(url)
+            print fitur_14(url)
 
         except:
             pass
