@@ -3,6 +3,8 @@ import urllib2
 import requests
 import socket
 import json
+from urlparse import urljoin
+from bs4 import BeautifulSoup
 
 #if using proxy its.ac.id
 def conn_proxy():
@@ -30,6 +32,18 @@ def get_domain(url):
             return domain
         else:
             return domain
+
+#Fitur 1 - Foreign Anchor
+def fitur_1(url):
+    request = urllib2.Request(url, headers = headers)
+    html = urllib2.urlopen(request).read()
+    soup = BeautifulSoup(html)
+    anchor = soup.find_all("a")
+
+    for i in anchor:
+        #ubah relatif URL ke absolut URL
+        #print i["href"]
+        print urljoin(url, i["href"])
 
 #Fitur 6 - Slash in Page Address
 def fitur_6(url):
@@ -76,7 +90,6 @@ def fitur_15(url):
     key = "AIzaSyBKfwvzDYmnSM1yM9dZkZQ08PxfG99n0hQ"
     cx = "015058113956565325925"
     q = url
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1"}
 
     request = urllib2.Request("https://www.googleapis.com/customsearch/v1?key=" + key + "&cx=" + cx + ":awgpmf5zb5k&q=" + q, headers = headers)
     response = urllib2.urlopen(request)
@@ -108,11 +121,12 @@ def fitur_17(url):
     key = "AIzaSyBKfwvzDYmnSM1yM9dZkZQ08PxfG99n0hQ"
     url = "https://sb-ssl.google.com/safebrowsing/api/lookup?client=skripsi_phishing&key=" + key + "&appver=1.0.0&pver=3.1&url=" + url
 
-    try:
-        request = urllib2.urlopen(url).read()
+    #try:
+    request = urllib2.urlopen(url).read()
+    """
     except:
         print "GAGAL CEK BLACKLIST"
-
+    """
     if(request == "phishing" or request == "malware"):
         return -1
     else:
@@ -135,10 +149,9 @@ if __name__ == "__main__":
             #print fitur_13(data[n])
             #print get_domain(data[n])
             print url
-            print fitur_14(url)
+            print fitur_1(url)
 
         except:
             pass
 
         n += 1
-    print n
