@@ -3,7 +3,7 @@ import urllib2
 import requests
 import socket
 import json
-import urlparse
+from urlparse import urlparse
 from urlparse import urljoin
 from bs4 import BeautifulSoup
 
@@ -18,7 +18,12 @@ def connproxy():
 def getdomain(url):
     #urlparse berguna untuk membagi URL menjadi 6 komponen: scheme://netloc/path;parameters?query#fragment
     parse_result = urlparse(url)
-    domain = parse_result.netloc
+    if(parse_result.netloc == ""):
+        domain = parse_result.path
+        if(domain[:1] == "."):
+            domain = domain[1:]
+    else:
+        domain = parse_result.netloc
 
     try:
         #cek apakah IP address atau bukan
@@ -27,7 +32,7 @@ def getdomain(url):
     except:
         #buang subdomain www karena bukan domain name
         if(domain[:4] == "www."):
-            domain = parse_result.netloc[4:]
+            domain = domain[4:]
         #split domain kedalam array var tmp berdasarkan titik
         tmp = domain.split(".")
         #dilakukan pengecekan jika terdapat lebih dari dua part substring, misal: google.co.uk, google.co.id
@@ -65,23 +70,25 @@ def fitur6(url):
 
 #Fitur 13 - Cookie
 def fitur13(url):
+    domain = getdomain(url)
+    print "DOMAIN PADA URL DATASET: " + domain
     request = requests.get(url, headers = headers)
     cookies = request.cookies.list_domains()
 
-    #initial no cookies found
-    flag = 2
-    for i in cookies:
-        if(getdomain(i) in url):
-            #own domain
-            flag = 1
-        else:
-            #foreign domain
-            flag = -1
-            return flag
-
-    if(flag == 2):
+    #jika tidak terdapat cookie sama sekali
+    if(len(cookies) == 0):
         return 2
     else:
+        for i in cookies:
+            print "DOMAIN PADA COOKIE: " + getdomain(i)
+            if(getdomain(i) == domain):
+                #own domain
+                flag = 1
+            else:
+                #foreign domain
+                return -1
+
+    if(flag == 1):
         return 1
 
 #Fitur 14 - SSL Certificate
@@ -162,9 +169,7 @@ if __name__ == "__main__":
             #print get_domain(data[n])
             #print fitur1(url)
             print url
-            print getdomain(url)
-
-
+            print fitur13(url)
         except:
             pass
 
