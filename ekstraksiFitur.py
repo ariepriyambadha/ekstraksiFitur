@@ -7,22 +7,22 @@ from urlparse import urljoin
 from bs4 import BeautifulSoup
 
 #if using proxy its.ac.id
-def conn_proxy():
+def connproxy():
     proxy = urllib2.ProxyHandler({'http':'http://arie.priyambadha10@mhs.if.its.ac.id:118957592@proxy.its.ac.id:8080'})
     auth = urllib2.HTTPBasicAuthHandler()
     opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
     urllib2.install_opener(opener)
 
 #get domain from raw url
-def get_domain(url):
+def getdomain(url):
     if(url[:7] == "http://" or url[:8] == "https://"):
         index_double_slash = url.find("/") + 1
-        sub_url = url[index_double_slash + 1:]
+        suburl = url[index_double_slash + 1:]
 
-    if("/" in sub_url):
-        domain = sub_url[:sub_url.find("/")]
+    if("/" in suburl):
+        domain = suburl[:suburl.find("/")]
     else:
-        domain = sub_url
+        domain = suburl
 
     try:
         socket.inet_aton(domain)
@@ -34,7 +34,7 @@ def get_domain(url):
             return domain
 
 #Fitur 1 - Foreign Anchor
-def fitur_1(url):
+def fitur1(url):
     request = urllib2.Request(url, headers = headers)
     html = urllib2.urlopen(request).read()
     soup = BeautifulSoup(html)
@@ -46,21 +46,21 @@ def fitur_1(url):
         print urljoin(url, i["href"])
 
 #Fitur 6 - Slash in Page Address
-def fitur_6(url):
+def fitur6(url):
     if(url.count("/")-2) >= 5:
         return -1
     else:
         return 1
 
 #Fitur 13 - Cookie
-def fitur_13(url):
+def fitur13(url):
     request = requests.get(url, headers = headers)
     cookies = request.cookies.list_domains()
 
     #initial no cookies found
     flag = 2
     for i in cookies:
-        if(get_domain(i) in url):
+        if(getdomain(i) in url):
             #own domain
             flag = 1
         else:
@@ -74,7 +74,7 @@ def fitur_13(url):
         return 1
 
 #Fitur 14 - SSL Certificate
-def fitur_14(url):
+def fitur14(url):
     if(url[:4] == "http"):
         try:
             #certs.pem : CA Bundle is extracted from the Mozilla Included CA Certificate List.
@@ -86,7 +86,7 @@ def fitur_14(url):
         return -1
 
 #Fitur 15 - Search Engine
-def fitur_15(url):
+def fitur15(url):
     key = "AIzaSyBKfwvzDYmnSM1yM9dZkZQ08PxfG99n0hQ"
     cx = "015058113956565325925"
     q = url
@@ -117,7 +117,7 @@ Possible reasons for the Bad Request (HTTP code 400):
     The queried URL is not a valid URL or not properly encoded.
 """
 #Fitur 17 - Blacklist
-def fitur_17(url):
+def fitur17(url):
     key = "AIzaSyBKfwvzDYmnSM1yM9dZkZQ08PxfG99n0hQ"
     url = "https://sb-ssl.google.com/safebrowsing/api/lookup?client=skripsi_phishing&key=" + key + "&appver=1.0.0&pver=3.1&url=" + url
 
@@ -141,7 +141,7 @@ if __name__ == "__main__":
         data = file.readlines()
 
     n = 0
-    #conn_proxy()
+    #connproxy()
     while n < len(data):
         url = data[n]
         try:
@@ -149,7 +149,7 @@ if __name__ == "__main__":
             #print fitur_13(data[n])
             #print get_domain(data[n])
             print url
-            print fitur_1(url)
+            print fitur1(url)
 
         except:
             pass
