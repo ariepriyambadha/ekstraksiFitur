@@ -3,6 +3,7 @@ import urllib2
 import requests
 import socket
 import json
+from urlparse import urlparse
 from urlparse import urljoin
 from bs4 import BeautifulSoup
 
@@ -15,21 +16,21 @@ def connproxy():
 
 #get domain from raw url
 def getdomain(url):
-    if(url[:7] == "http://" or url[:8] == "https://"):
-        index_double_slash = url.find("/") + 1
-        suburl = url[index_double_slash + 1:]
-
-    if("/" in suburl):
-        domain = suburl[:suburl.find("/")]
-    else:
-        domain = suburl
+    a = urlparse(url)
+    domain = urlparse(url).netloc
 
     try:
         socket.inet_aton(domain)
         return domain
     except:
-        if(domain.count(".") == 1):
-            return domain
+        if(domain[:4] == "www."):
+            domain = a.netloc[4:]
+        tmp = domain.split(".")
+        if(len(tmp) > 2):
+            if (tmp[-2] in GENERIC_TLD):
+                return tmp[-3] + "." + tmp[-2] + "." + tmp[-1]
+            else:
+                return tmp[-2] + "." + tmp[-1]
         else:
             return domain
 
@@ -135,6 +136,7 @@ def fitur17(url):
 if __name__ == "__main__":
     #fake user agents
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1"}
+    GENERIC_TLD = ["com", "co", "gov", "net", "org"]
 
     #get database
     with open("dataset.txt", "r") as file:
@@ -148,10 +150,13 @@ if __name__ == "__main__":
             #print fitur_6(data[n])
             #print fitur_13(data[n])
             #print get_domain(data[n])
+            #print fitur1(url)
             print url
-            print fitur1(url)
+            print getdomain(url)
+
 
         except:
             pass
 
         n += 1
+    print n
