@@ -56,10 +56,42 @@ def fitur1(url):
     soup = BeautifulSoup(html)
     anchor = soup.find_all("a")
 
+    #n foreign anchor
+    print len(anchor)
+    nfa = 0
     for i in anchor:
-        #ubah relatif URL ke absolut URL
-        #print i["href"]
-        print urljoin(url, i["href"])
+        link_anchor = i["href"]
+        print link_anchor
+
+        #javascript bukan link maka langsung dipass saja
+        if(link_anchor[:10] == "javascript"):
+            pass
+        else:
+            parse_result = urlparse(link_anchor)
+            #relatif url pasti mengarah kesitus yang sama maka langsung dipass saja
+            if(parse_result.scheme == ""):
+                pass
+            else:
+                if(link_anchor[:2] == "//"):
+                    link_anchor = link_anchor[2:]
+                    if(getdomain(link_anchor) == getdomain(url)):
+                        pass
+                    else:
+                        print "FOREIGN ANCHOR"
+                        nfa += 1
+                else:
+                    if(getdomain(link_anchor) == getdomain(url)):
+                        pass
+                    else:
+                        print "FOREIGN ANCHOR"
+                        nfa += 1
+
+    print nfa
+
+    if(nfa > 5):
+        return -1
+    else:
+        return 1
 
 #Fitur 6 - Slash in Page Address
 def fitur6(url):
@@ -160,7 +192,7 @@ if __name__ == "__main__":
         data = file.readlines()
 
     n = 0
-    #connproxy()
+    connproxy()
     while n < len(data):
         url = data[n]
         try:
@@ -169,7 +201,7 @@ if __name__ == "__main__":
             #print get_domain(data[n])
             #print fitur1(url)
             print url
-            print fitur13(url)
+            print fitur1(url)
         except:
             pass
 
