@@ -192,7 +192,7 @@ if __name__ == "__main__":
         data = file.readlines()
 
     n = 0
-    connproxy()
+    #connproxy()
     while n < len(data):
         url = data[n]
         try:
