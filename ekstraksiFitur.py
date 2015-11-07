@@ -4,7 +4,7 @@ import requests
 import socket
 import json
 from urlparse import urlparse
-from urlparse import urljoin
+from requests.utils import quote
 from bs4 import BeautifulSoup
 
 #if using proxy its.ac.id
@@ -98,12 +98,39 @@ def fitur1(url):
     else:
         return 1
 
+#Fitur 2 - Nil Anchor
+def fitur2(url):
+    request = urllib2.Request(url, headers = headers)
+    html = urllib2.urlopen(request).read()
+    soup = BeautifulSoup(html)
+    anchor = soup.find_all("a")
+
+    for i in anchor:
+        if(i.has_attr("href")):
+            link_anchor = i["href"]
+        else:
+            continue
+
+        print link_anchor
+
+        if(link_anchor == NIL_ANCHOR):
+            return -1
+
+    return 1
+
 #Fitur 3 - IP Address
 def fitur3(url):
     try:
         socket.inet_aton(urlparse(url).netloc)
         return -1
     except:
+        return 1
+
+#Fitur 4 - Dots in Page Address
+def fitur4(url):
+    if(url.count(".") > 5):
+        return -1
+    else:
         return 1
 
 #Fitur 6 - Slash in Page Address
@@ -189,6 +216,8 @@ Possible reasons for the Bad Request (HTTP code 400):
 """
 #Fitur 17 - Blacklist
 def fitur17(url):
+    #ubah url kedalam bentuk encoding UTF-8 karena paramter tidak boleh mengandung Reserved characters
+    url = quote(url, safe="")
     key = "AIzaSyBKfwvzDYmnSM1yM9dZkZQ08PxfG99n0hQ"
     url = "https://sb-ssl.google.com/safebrowsing/api/lookup?client=skripsi_phishing&key=" + key + "&appver=1.0.0&pver=3.1&url=" + url
 
@@ -204,6 +233,7 @@ if __name__ == "__main__":
     #fake user agents
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1"}
     GENERIC_TLD = ["com", "co", "gov", "net", "org", "int", "edu", "mil"]
+    NIL_ANCHOR = ["", "javascript:;", "javascript:void(0)", "#"]
 
     #get database
     with open("dataset.txt", "r") as file:
@@ -233,8 +263,9 @@ if __name__ == "__main__":
         print url
 
         try:
+            #print urllib2.urlopen("http://www.kaskus.co.id").read()
             #print fitur17(url)
-            print fitur3(url)
+            print fitur17(url)
         except urllib2.URLError as e:
             print e.reason
         except urllib2.HTTPError as e:
