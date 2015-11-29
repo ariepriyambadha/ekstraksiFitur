@@ -23,7 +23,8 @@ from collections import Counter
 from OpenSSL import crypto
 
 generic_tld = ["com", "co", "gov", "net", "org", "int", "edu", "mil"]
-nil_anchors = ["", "javascript:;", "javascript:void(0)", "#"]
+nil_anchors = ["about:blank", "javascript:", "javascript:;", "javascript:void(0)", "javascript:void(0);",
+               "javascript: void(0)", "javascript: void(0);", "#"]
 headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0"}
 key_api = "AIzaSyBKfwvzDYmnSM1yM9dZkZQ08PxfG99n0hQ"
 cx = "015058113956565325925"
@@ -43,8 +44,8 @@ def check_url(url):
         return 1
 
 def tfidf(n, N, docFreq):
-    tf = math.sqrt(n/N)
-    idf = 1 + math.log((6053398)/(docFreq+1))
+    tf = math.sqrt(n / N)
+    idf = 1 + math.log((6053398) / (docFreq + 1))
 
     return tf * idf
 
@@ -112,6 +113,7 @@ def get_identity(url, soup, corpus):
             if(len(j) > 2):
                 tokens.append(j)
 
+    # ekstrak href pada anchor
     anchor = soup("a")
     for i in anchor:
         if (i.has_attr("href")):
@@ -136,6 +138,7 @@ def get_identity(url, soup, corpus):
             docFreq = corpus[i]
         else:
             docFreq = 0
+
         score = tfidf(float(list_terms[i]), float(N), float(docFreq))
 
         raw_list_tfidf[i] = score
@@ -154,11 +157,11 @@ def foreign_anchor(url, soup):
     for i in anchor:
         if(i.has_attr("href")):
             href = str(i["href"]).lower()
-            # print href
 
             # cek apakah href merupakan absolute url atau bukan? 1 = absolute URL, 0 = relatif URL
             if(check_url(href) == 1 or href[:2] == "//"):
                if(get_domain(href) != get_domain(url)):
+                   #print href
                    nfa += 1
 
     if(nfa > 5):
@@ -205,14 +208,15 @@ def dots_url(url):
 
     if(len(list_url) == 0):
         return 1
-    if(nd/len(list_url) > 5.0):
+
+    if(float(nd)/float(len(list_url)) > 5.0):
         return -1
     else:
         return 1
 
 # Fitur 6: Slash in Page Address
 def slash_page_addr(url):
-    if((url.count("/") - 2) > 5):
+    if(url.count("/") > 5):
         return -1
     else:
         return 1
@@ -229,7 +233,8 @@ def slash_url(url):
 
     if(len(list_url) == 0):
         return 1
-    if(ns/len(list_url) >= 5.0):
+
+    if(float(ns)/float(len(list_url)) >= 5.0):
         return -1
     else:
         return 1
@@ -239,13 +244,15 @@ def foreign_anchor_in_id(url, soup, corpus):
     set_id = get_identity(url, soup, corpus)
     anchor = soup("a")
 
-    nfa = 0
+    print set_id
+
     for i in anchor:
         if(i.has_attr("href")):
             href = str(i["href"]).lower()
-            # print href
             domain = get_domain(urljoin(url, href))
+
             new_domain = domain[:str(domain).find(".")]
+            print new_domain
 
             if(new_domain not in set_id):
                 return -1
@@ -284,6 +291,7 @@ def foreign_request(url, soup):
             href = i["href"]
             if(check_url(href) == 1 or href[:2] == "//"):
                 if(get_domain(url) != get_domain(href)):
+                    #print href
                     return -1
 
     # soup script tag
@@ -293,6 +301,7 @@ def foreign_request(url, soup):
             src = i["src"]
             if(check_url(src) == 1 or src[:2] == "//"):
                 if(get_domain(url) != get_domain(src)):
+                    #print src
                     return -1
 
     # soup img tag
@@ -302,6 +311,7 @@ def foreign_request(url, soup):
             src = i["src"]
             if(check_url(src) == 1 or src[:2] == "//"):
                 if(get_domain(url) != get_domain(src)):
+                    #print src
                     return -1
 
     # soup body tag
@@ -311,6 +321,7 @@ def foreign_request(url, soup):
             background = i["background"]
             if(check_url(background) == 1 or background[:2] == "//"):
                 if(get_domain(url) != get_domain(background)):
+                    #print background
                     return -1
 
     # soup object tag
@@ -320,6 +331,7 @@ def foreign_request(url, soup):
             codebase = i["codebase"]
             if(check_url(codebase) == 1 or codebase[:2] == "//"):
                 if(get_domain(url) != get_domain(codebase)):
+                    #print codebase
                     return -1
 
     # soup applet tag
@@ -329,12 +341,14 @@ def foreign_request(url, soup):
             codebase = i["codebase"]
             if(check_url(codebase) == 1 or codebase[:2] == "//"):
                 if(get_domain(url) != get_domain(codebase)):
+                    #print codebase
                     return -1
 
         if(i.has_attr("code")):
             code = i["code"]
             if(check_url(code) == 1 or code[:2] == "//"):
                 if(get_domain(url) != get_domain(code)):
+                    #print code
                     return -1
 
     # soup frame tag
@@ -344,15 +358,17 @@ def foreign_request(url, soup):
             src = i["src"]
             if(check_url(src) == 1 or src[:2] == "//"):
                 if(get_domain(url) != get_domain(src)):
+                    #print src
                     return -1
 
     # soup iframe tag
     iframe = soup("iframe")
     for i in iframe:
         if(i.has_attr("src")):
-            iframe = i["src"]
-            if(check_url(iframe) == 1 or iframe[:2] == "//"):
-                if(get_domain(url) != get_domain(iframe)):
+            src = i["src"]
+            if(check_url(src) == 1 or src[:2] == "//"):
+                if(get_domain(url) != get_domain(src)):
+                    #print src
                     return -1
 
     # soup input tag
@@ -362,6 +378,7 @@ def foreign_request(url, soup):
             src = i["src"]
             if(check_url(src) == 1 or src[:2] == "//"):
                 if(get_domain(url) != get_domain(src)):
+                    #print src
                     return -1
 
     return 1
@@ -374,7 +391,6 @@ def foreign_request_in_id(url, soup, corpus):
     for i in link:
         if(i.has_attr("href")):
             href = str(i["href"]).lower()
-            # print href
             domain = get_domain(urljoin(url, href))
             new_domain = domain[:str(domain).find(".")]
 
@@ -386,7 +402,6 @@ def foreign_request_in_id(url, soup, corpus):
     for i in script:
         if(i.has_attr("src")):
             href = str(i["src"]).lower()
-            # print href
             domain = get_domain(urljoin(url, href))
             new_domain = domain[:str(domain).find(".")]
 
@@ -398,7 +413,6 @@ def foreign_request_in_id(url, soup, corpus):
     for i in img:
         if(i.has_attr("src")):
             href = str(i["src"]).lower()
-            # print href
             domain = get_domain(urljoin(url, href))
             new_domain = domain[:str(domain).find(".")]
 
@@ -410,7 +424,6 @@ def foreign_request_in_id(url, soup, corpus):
     for i in body:
         if(i.has_attr("background")):
             href = str(i["background"]).lower()
-            # print href
             domain = get_domain(urljoin(url, href))
             new_domain = domain[:str(domain).find(".")]
 
@@ -422,7 +435,6 @@ def foreign_request_in_id(url, soup, corpus):
     for i in object:
         if(i.has_attr("codebase")):
             href = str(i["codebase"]).lower()
-            # print href
             domain = get_domain(urljoin(url, href))
             new_domain = domain[:str(domain).find(".")]
 
@@ -434,7 +446,6 @@ def foreign_request_in_id(url, soup, corpus):
     for i in object:
         if(i.has_attr("codebase")):
             href = str(i["codebase"]).lower()
-            # print href
             domain = get_domain(urljoin(url, href))
             new_domain = domain[:str(domain).find(".")]
 
@@ -443,7 +454,6 @@ def foreign_request_in_id(url, soup, corpus):
 
         if(i.has_attr("code")):
             href = str(i["code"]).lower()
-            # print href
             domain = get_domain(urljoin(url, href))
             new_domain = domain[:str(domain).find(".")]
 
@@ -455,7 +465,6 @@ def foreign_request_in_id(url, soup, corpus):
     for i in frame:
         if(i.has_attr("src")):
             href = str(i["src"]).lower()
-            # print href
             domain = get_domain(urljoin(url, href))
             new_domain = domain[:str(domain).find(".")]
 
@@ -467,7 +476,6 @@ def foreign_request_in_id(url, soup, corpus):
     for i in iframe:
         if(i.has_attr("src")):
             href = str(i["src"]).lower()
-            # print href
             domain = get_domain(urljoin(url, href))
             new_domain = domain[:str(domain).find(".")]
 
@@ -479,7 +487,6 @@ def foreign_request_in_id(url, soup, corpus):
     for i in input:
         if(i.has_attr("src")):
             href = str(i["src"]).lower()
-            # print href
             domain = get_domain(urljoin(url, href))
             new_domain = domain[:str(domain).find(".")]
 
@@ -491,15 +498,16 @@ def foreign_request_in_id(url, soup, corpus):
 # Fitur 13: Cookie
 def cookies(url):
     request = requests.get(url, headers = headers)
-    cookies = request.cookies.list_domains()
+    list_cookies = request.cookies.list_domains()
 
     flag = 0
-    if(len(cookies) == 0):
+    if(len(list_cookies) == 0):
         return 2
     else:
-        for domain_cookies in cookies:
+        for domain_cookies in list_cookies:
             if(domain_cookies[:1] == "."):
                 domain_cookies = domain_cookies[1:]
+
             if(get_domain(domain_cookies) == get_domain(url)):
                 flag = 1
             else:
@@ -562,7 +570,8 @@ def search_engine(url):
         for i in result:
             if(n == 5):
                 break
-            if(url == i["link"]):
+
+            if(get_domain(url) == get_domain(i["link"])):
                 flag = 1
 
             n += 1
@@ -579,7 +588,6 @@ def whois_lookup(url):
 
     try:
         w = whois.whois(new_url)
-        #print w
         return 1
     except:
         return -1
@@ -591,7 +599,7 @@ def blacklist(url):
                   + key_api + "&appver=1.0.0&pver=3.1&url=" + url
 
     #print requests.get(request_url).status_code
-    request = requests.get(request_url).text
+    request = requests.get(request_url, headers = headers).text
 
     if(request == "phishing" or request == "malware"):
         return -1
@@ -608,13 +616,11 @@ def main():
         for row in csv_reader:
             corpus[row[0]] = row[1]
 
-    n = 30
-
+    n = 0
+    #connect_proxy()
     print "n\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\t15\t16\t17"
     while n < len(dataset):
-        # hapus karakter new lines di akhir url
         url = dataset[n].rstrip("\n")
-        #print url
 
         try:
             request = urllib2.Request(url, headers = headers)
@@ -645,7 +651,7 @@ def main():
                     f4 = 0
 
                 try:
-                    f5 = dots_url(url)
+                    f5 = 0
                 except:
                     f5 = 0
 
@@ -655,12 +661,12 @@ def main():
                     f6 = 0
 
                 try:
-                    f7 = slash_url(url)
+                    f7 = 0
                 except:
                     f7 = 0
 
                 try:
-                    f8 = foreign_anchor_in_id(url, soup, corpus)
+                    f8 = 0
                 except:
                     f8 = 0
 
@@ -680,7 +686,7 @@ def main():
                     f11 = 0
 
                 try:
-                    f12 = foreign_anchor_in_id(url, soup, corpus)
+                    f12 = 0
                 except:
                     f12 = 0
 
@@ -713,6 +719,7 @@ def main():
                       + str(f6) + "\t" + str(f7) + "\t" + str(f8) + "\t" + str(f9) + "\t" + str(f10) + "\t" \
                       + str(f11) + "\t" + str(f12) + "\t" + str(f13) + "\t" + str(f14) + "\t" + str(f15) + "\t" \
                       + str(f16) + "\t" + str(f17)
+
             else:
                 print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
 
