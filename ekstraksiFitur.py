@@ -587,7 +587,7 @@ def whois_lookup(url):
     new_url = str(url_parse.scheme) + "://" + str(url_parse.netloc)
 
     try:
-        w = whois.whois(new_url)
+        whois.whois(new_url)
         return 1
     except:
         return -1
@@ -598,7 +598,7 @@ def blacklist(url):
     request_url = "https://sb-ssl.google.com/safebrowsing/api/lookup?client=skripsi_phishing&key=" \
                   + key_api + "&appver=1.0.0&pver=3.1&url=" + url
 
-    #print requests.get(request_url).status_code
+    # print requests.get(request_url).status_code
     request = requests.get(request_url, headers = headers).text
 
     if(request == "phishing" or request == "malware"):
@@ -617,7 +617,7 @@ def main():
             corpus[row[0]] = row[1]
 
     n = 0
-    #connect_proxy()
+    # connect_proxy()
     print "n\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\t15\t16\t17"
     while n < len(dataset):
         url = dataset[n].rstrip("\n")
@@ -721,17 +721,21 @@ def main():
                       + str(f16) + "\t" + str(f17)
 
             else:
+                print "Website tidak aktif"
                 print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
 
         except urllib2.HTTPError as e:
+            print "Http Error:", e
             print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
         except urllib2.URLError as e:
+            print "Url Error:", e
             print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
         except socket.error as e:
+            print "Socket Error:", e
             print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
 
         n += 1
-        #time.sleep(5)
+        # time.sleep(5)
 
 if __name__ == "__main__":
     main()
