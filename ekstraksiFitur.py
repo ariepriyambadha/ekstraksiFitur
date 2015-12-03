@@ -19,6 +19,7 @@ from urlparse import urlparse
 from urlparse import urljoin
 from requests.utils import quote
 from nltk.corpus import stopwords
+from nltk.tokenize import wordpunct_tokenize
 from collections import Counter
 from OpenSSL import crypto
 
@@ -26,8 +27,8 @@ generic_tld = ["com", "co", "gov", "net", "org", "int", "edu", "mil"]
 nil_anchors = ["about:blank", "javascript:", "javascript:;", "javascript:void(0)", "javascript:void(0);",
                "javascript: void(0)", "javascript: void(0);", "#"]
 headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0"}
-key_api = "AIzaSyBKfwvzDYmnSM1yM9dZkZQ08PxfG99n0hQ"
-cx = "015058113956565325925"
+key_api = "AIzaSyBy73pnh_RhFznGf5rjN6WRO5k_LRRjiu4"
+cx = "018363263888988973222:0u39aymny4g"
 
 def connect_proxy():
     proxy = urllib2.ProxyHandler({'http':'http://arie.priyambadha10@mhs.if.its.ac.id:118957592@proxy.its.ac.id:8080'})
@@ -82,7 +83,7 @@ def get_identity(url, soup, corpus):
 
     # ekstrak konten title
     title = soup.find("title")
-    tmp = nltk.word_tokenize(str(title.string))
+    tmp = wordpunct_tokenize(str(title.string))
 
     for i in tmp:
         if(len(i) > 2):
@@ -102,32 +103,40 @@ def get_identity(url, soup, corpus):
                     meta_desc.append(i["content"])
 
     for i in meta_desc:
-        tmp = nltk.word_tokenize(i)
+        tmp = wordpunct_tokenize(i)
         for j in tmp:
             if(len(j) > 2):
                 tokens.append(j)
 
     for i in meta_key:
-        tmp = nltk.word_tokenize(i)
+        tmp = wordpunct_tokenize(i)
         for j in tmp:
             if(len(j) > 2):
                 tokens.append(j)
+
+    print title.string
+    print meta_key
+    print meta_desc
 
     # ekstrak href pada anchor
     anchor = soup("a")
     for i in anchor:
         if (i.has_attr("href")):
-            anchor = get_domain(urljoin(url, i["href"]))
-            new_anchor = anchor[:str(anchor).find(".")]
-            if(len(new_anchor) > 2):
-                tokens.append(new_anchor)
+            if(str(i["href"]).lower()[:4] == "http"):
+                anchor = get_domain(urljoin(url, i["href"]))
+                print anchor
+                new_anchor = anchor[:str(anchor).find(".")]
+                if(len(new_anchor) > 2):
+                    tokens.append(new_anchor)
 
     stop_words = set(stopwords.words("english"))
+    tmp = ["http", "www", "in", "com", "co", "gov", "net", "org", "int", "edu", "mil"]
 
     final_tokens = []
     for i in tokens:
         if(str(i).lower() not in stop_words):
-            final_tokens.append(str(i).lower())
+            if(str(i).lower() not in tmp):
+                final_tokens.append(str(i).lower())
 
     raw_list_tfidf = {}
     N = len(final_tokens)
@@ -147,6 +156,8 @@ def get_identity(url, soup, corpus):
     for key, value in Counter(raw_list_tfidf).most_common(5):
         set_id.append(key)
 
+    print set_id
+
     return set_id
 
 # Fitur 1: Foreign Anchor
@@ -157,12 +168,16 @@ def foreign_anchor(url, soup):
     for i in anchor:
         if(i.has_attr("href")):
             href = str(i["href"]).lower()
+            #print href
 
             # cek apakah href merupakan absolute url atau bukan? 1 = absolute URL, 0 = relatif URL
-            if(check_url(href) == 1 or href[:2] == "//"):
-               if(get_domain(href) != get_domain(url)):
-                   #print href
-                   nfa += 1
+            if(check_url(href) == 1):
+               if(href[:4] == "http"):
+                   if(get_domain(href) != get_domain(url)):
+                       nfa += 1
+            elif(href[:2] == "//"):
+                if(get_domain(href) != get_domain(url)):
+                    nfa += 1
 
     if(nfa > 5):
         return -1
@@ -244,15 +259,12 @@ def foreign_anchor_in_id(url, soup, corpus):
     set_id = get_identity(url, soup, corpus)
     anchor = soup("a")
 
-    print set_id
-
     for i in anchor:
         if(i.has_attr("href")):
             href = str(i["href"]).lower()
             domain = get_domain(urljoin(url, href))
 
             new_domain = domain[:str(domain).find(".")]
-            print new_domain
 
             if(new_domain not in set_id):
                 return -1
@@ -274,10 +286,15 @@ def sfh(url, soup):
         if(i.has_attr("action")):
             action = str(i["action"]).lower()
 
-            if(action == "" or action == "#" or action == "void"):
+            if(action == "" or action == "#" or action == "void"
+               or action == "javascript:void(0)" or action == "javascript:void(0);"):
                 return -1
-            elif(check_url(action) == 1 or action[:2] == "//"):
-                if(get_domain(url) != get_domain(action)):
+            elif(check_url(action) == 1):
+                if(action[:4] == "http"):
+                    if(get_domain(url) != get_domain(action)):
+                        return -1
+            elif(action[:2] == "//"):
+                if(get_domain(action) != get_domain(url)):
                     return -1
 
     return 1
@@ -289,9 +306,12 @@ def foreign_request(url, soup):
     for i in link:
         if(i.has_attr("href")):
             href = i["href"]
-            if(check_url(href) == 1 or href[:2] == "//"):
+            if(check_url(href) == 1):
+                if(href[:4] == "http"):
+                    if(get_domain(url) != get_domain(href)):
+                        return -1
+            elif(href[:2] == "//"):
                 if(get_domain(url) != get_domain(href)):
-                    #print href
                     return -1
 
     # soup script tag
@@ -299,9 +319,12 @@ def foreign_request(url, soup):
     for i in script:
         if(i.has_attr("src")):
             src = i["src"]
-            if(check_url(src) == 1 or src[:2] == "//"):
+            if(check_url(src) == 1):
+                if(src[:4] == "http"):
+                    if(get_domain(url) != get_domain(src)):
+                        return -1
+            elif(src[:2] == "//"):
                 if(get_domain(url) != get_domain(src)):
-                    #print src
                     return -1
 
     # soup img tag
@@ -309,9 +332,12 @@ def foreign_request(url, soup):
     for i in img:
         if(i.has_attr("src")):
             src = i["src"]
-            if(check_url(src) == 1 or src[:2] == "//"):
+            if(check_url(src) == 1):
+                if(src[:4] == "http"):
+                    if(get_domain(url) != get_domain(src)):
+                        return -1
+            elif(src[:2] == "//"):
                 if(get_domain(url) != get_domain(src)):
-                    #print src
                     return -1
 
     # soup body tag
@@ -319,9 +345,12 @@ def foreign_request(url, soup):
     for i in body:
         if(i.has_attr("background")):
             background = i["background"]
-            if(check_url(background) == 1 or background[:2] == "//"):
+            if(check_url(background) == 1):
+                if(background[:4] == "http"):
+                    if(get_domain(url) != get_domain(background)):
+                        return -1
+            elif(background[:2] == "//"):
                 if(get_domain(url) != get_domain(background)):
-                    #print background
                     return -1
 
     # soup object tag
@@ -329,9 +358,12 @@ def foreign_request(url, soup):
     for i in object:
         if(i.has_attr("codebase")):
             codebase = i["codebase"]
-            if(check_url(codebase) == 1 or codebase[:2] == "//"):
+            if(check_url(codebase) == 1):
+                if(codebase[:4] == "http"):
+                    if(get_domain(url) != get_domain(codebase)):
+                        return -1
+            elif(codebase[:2] == "//"):
                 if(get_domain(url) != get_domain(codebase)):
-                    #print codebase
                     return -1
 
     # soup applet tag
@@ -339,46 +371,12 @@ def foreign_request(url, soup):
     for i in object:
         if(i.has_attr("codebase")):
             codebase = i["codebase"]
-            if(check_url(codebase) == 1 or codebase[:2] == "//"):
+            if(check_url(codebase) == 1):
+                if(codebase[:4] == "http"):
+                    if(get_domain(url) != get_domain(codebase)):
+                        return -1
+            elif(codebase[:2] == "//"):
                 if(get_domain(url) != get_domain(codebase)):
-                    #print codebase
-                    return -1
-
-        if(i.has_attr("code")):
-            code = i["code"]
-            if(check_url(code) == 1 or code[:2] == "//"):
-                if(get_domain(url) != get_domain(code)):
-                    #print code
-                    return -1
-
-    # soup frame tag
-    frame = soup("frame")
-    for i in frame:
-        if(i.has_attr("src")):
-            src = i["src"]
-            if(check_url(src) == 1 or src[:2] == "//"):
-                if(get_domain(url) != get_domain(src)):
-                    #print src
-                    return -1
-
-    # soup iframe tag
-    iframe = soup("iframe")
-    for i in iframe:
-        if(i.has_attr("src")):
-            src = i["src"]
-            if(check_url(src) == 1 or src[:2] == "//"):
-                if(get_domain(url) != get_domain(src)):
-                    #print src
-                    return -1
-
-    # soup input tag
-    input = soup("input")
-    for i in input:
-        if(i.has_attr("src")):
-            src = i["src"]
-            if(check_url(src) == 1 or src[:2] == "//"):
-                if(get_domain(url) != get_domain(src)):
-                    #print src
                     return -1
 
     return 1
@@ -386,6 +384,7 @@ def foreign_request(url, soup):
 # Fitur 12: Foreign Request in Identity Set
 def foreign_request_in_id(url, soup, corpus):
     set_id = get_identity(url, soup, corpus)
+
     # soup link tag
     link = soup("link")
     for i in link:
@@ -452,47 +451,6 @@ def foreign_request_in_id(url, soup, corpus):
             if(new_domain not in set_id):
                 return -1
 
-        if(i.has_attr("code")):
-            href = str(i["code"]).lower()
-            domain = get_domain(urljoin(url, href))
-            new_domain = domain[:str(domain).find(".")]
-
-            if(new_domain not in set_id):
-                return -1
-
-    # soup frame tag
-    frame = soup("frame")
-    for i in frame:
-        if(i.has_attr("src")):
-            href = str(i["src"]).lower()
-            domain = get_domain(urljoin(url, href))
-            new_domain = domain[:str(domain).find(".")]
-
-            if(new_domain not in set_id):
-                return -1
-
-    # soup iframe tag
-    iframe = soup("iframe")
-    for i in iframe:
-        if(i.has_attr("src")):
-            href = str(i["src"]).lower()
-            domain = get_domain(urljoin(url, href))
-            new_domain = domain[:str(domain).find(".")]
-
-            if(new_domain not in set_id):
-                return -1
-
-    # soup input tag
-    input = soup("input")
-    for i in input:
-        if(i.has_attr("src")):
-            href = str(i["src"]).lower()
-            domain = get_domain(urljoin(url, href))
-            new_domain = domain[:str(domain).find(".")]
-
-            if(new_domain not in set_id):
-                return -1
-
     return 1
 
 # Fitur 13: Cookie
@@ -500,7 +458,6 @@ def cookies(url):
     request = requests.get(url, headers = headers)
     list_cookies = request.cookies.list_domains()
 
-    flag = 0
     if(len(list_cookies) == 0):
         return 2
     else:
@@ -508,19 +465,16 @@ def cookies(url):
             if(domain_cookies[:1] == "."):
                 domain_cookies = domain_cookies[1:]
 
-            if(get_domain(domain_cookies) == get_domain(url)):
-                flag = 1
-            else:
+            if(get_domain(domain_cookies) != get_domain(url)):
                 return -1
 
-    if(flag == 1):
-        return 1
-    else:
-        return 2
+    return 1
 
 # Fitur 14: SSL Sertifikat
 def ssl_cert(url):
     if(url[:5] == "https"):
+        return 1
+        """
         #print get_domain(url)
         server_cert = ssl.get_server_certificate((get_domain(url), 443))
         x509 = crypto.load_certificate(crypto.FILETYPE_PEM, server_cert)
@@ -549,14 +503,21 @@ def ssl_cert(url):
         #print domain_CN
         #print x509.get_issuer()
         #print x509.has_expired()
+        """
     else:
         return -1
 
 # Fitur 15: Search Engine
 def search_engine(url):
+    #key_api = "AIzaSyBE9jGvAy8fMWCnUd9EN8UnGw5DXxLww7s
+    #cx = "018159697673271901985:8vkit3okjjk"
+
+    #key_api = "AIzaSyBy73pnh_RhFznGf5rjN6WRO5k_LRRjiu4
+    #cx = "018363263888988973222:0u39aymny4g"
+
     # menggunakan mesin pencarian Google CSE
     request = urllib2.Request("https://www.googleapis.com/customsearch/v1?key=" + key_api + "&cx="
-                              + cx + ":awgpmf5zb5k&q=" + url, headers = headers)
+                              + cx + "&q=" + url, headers = headers)
     response = urllib2.urlopen(request)
     data = json.load(response)
     search_information = data["searchInformation"]
@@ -617,10 +578,11 @@ def main():
             corpus[row[0]] = row[1]
 
     n = 0
-    # connect_proxy()
-    print "n\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\t15\t16\t17"
+    #connect_proxy()
+    #print "n\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\t15\t16\t17"
     while n < len(dataset):
         url = dataset[n].rstrip("\n")
+        print url
 
         try:
             request = urllib2.Request(url, headers = headers)
@@ -630,6 +592,7 @@ def main():
                 response = urllib2.urlopen(request).read()
                 soup = BeautifulSoup(response)
 
+                """
                 try:
                     f1 = foreign_anchor(url, soup)
                 except:
@@ -665,10 +628,14 @@ def main():
                 except:
                     f7 = 0
 
+                """
+
                 try:
-                    f8 = 0
+                    f8 = foreign_anchor_in_id(url, soup, corpus)
                 except:
                     f8 = 0
+
+                """
 
                 try:
                     f9 = at_symbol(url)
@@ -720,15 +687,16 @@ def main():
                       + str(f11) + "\t" + str(f12) + "\t" + str(f13) + "\t" + str(f14) + "\t" + str(f15) + "\t" \
                       + str(f16) + "\t" + str(f17)
 
+                """
             else:
                 print "Website tidak aktif"
                 print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
 
         except urllib2.HTTPError as e:
-            print "Http Error:", e
+            print "HTTP Error:", e
             print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
         except urllib2.URLError as e:
-            print "Url Error:", e
+            print "URL Error:", e
             print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
         except socket.error as e:
             print "Socket Error:", e
@@ -738,4 +706,5 @@ def main():
         # time.sleep(5)
 
 if __name__ == "__main__":
-    main()
+    #main()
+    tmp = ["http", "www", "in"]
