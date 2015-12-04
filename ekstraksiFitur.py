@@ -638,7 +638,7 @@ def blacklist(url):
         return 1
 
 def main():
-    with open("dataset.txt", "r") as file:
+    with open("zxcv.txt", "r") as file:
         dataset = file.readlines()
 
     corpus = {}
@@ -657,7 +657,7 @@ def main():
             request = urllib2.Request(url, headers = headers)
             status_code = urllib2.urlopen(request).getcode()
 
-            if(status_code != 200):
+            if(status_code == 200):
                 print url
 
             """
