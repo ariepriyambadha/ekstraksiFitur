@@ -1,0 +1,11 @@
+1
+key_api = "AIzaSyBKfwvzDYmnSM1yM9dZkZQ08PxfG99n0hQ"
+cx = "015058113956565325925:awgpmf5zb5k"
+
+2
+key_api = AIzaSyBE9jGvAy8fMWCnUd9EN8UnGw5DXxLww7s
+cx = 018159697673271901985:8vkit3okjjk
+
+3
+key_api = AIzaSyBy73pnh_RhFznGf5rjN6WRO5k_LRRjiu4
+cx = 018363263888988973222:0u39aymny4g

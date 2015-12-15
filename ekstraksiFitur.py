@@ -11,7 +11,6 @@ import nltk
 import csv
 import math
 import ssl
-
 from bs4 import BeautifulSoup
 from lxml import html
 from lxml.html import parse
@@ -82,12 +81,15 @@ def get_identity(url, soup, corpus):
     tokens = []
 
     # ekstrak konten title
-    title = soup.find("title")
-    tmp = wordpunct_tokenize(title.string)
+    if(soup.find("title") == None):
+        pass
+    else:
+        title = soup.find("title")
+        tmp = wordpunct_tokenize(title.string)
 
-    for i in tmp:
-        if(len(i) > 2):
-            tokens.append(i)
+        for i in tmp:
+            if(len(i) > 2):
+                tokens.append(str(i.encode("utf-8")).lower())
 
     # ekstrak konten meta description & keywords
     meta_key = []
@@ -106,13 +108,13 @@ def get_identity(url, soup, corpus):
         tmp = wordpunct_tokenize(i)
         for j in tmp:
             if(len(j) > 2):
-                tokens.append(j)
+                tokens.append(str(j.encode("utf-8")).lower())
 
     for i in meta_key:
         tmp = wordpunct_tokenize(i)
         for j in tmp:
             if(len(j) > 2):
-                tokens.append(j)
+                tokens.append(str(j.encode("utf-8")).lower())
 
     #print title.string
     #print meta_key
@@ -135,9 +137,9 @@ def get_identity(url, soup, corpus):
     final_tokens = []
     for i in tokens:
         #print i
-        if(str(i).lower() not in stop_words):
-            if(str(i).lower() not in tmp):
-                final_tokens.append(str(i).lower())
+        if(i not in stop_words):
+            if(i not in tmp):
+                final_tokens.append(i)
 
     raw_list_tfidf = {}
     N = len(final_tokens)
@@ -579,8 +581,8 @@ def ssl_cert(url):
 
 # Fitur 15: Search Engine
 def search_engine(url):
-    #key_api = "AIzaSyBE9jGvAy8fMWCnUd9EN8UnGw5DXxLww7s"
-    #cx = "018159697673271901985:8vkit3okjjk"
+    key_api = "AIzaSyBE9jGvAy8fMWCnUd9EN8UnGw5DXxLww7s"
+    cx = "018159697673271901985:8vkit3okjjk"
 
     #key_api = "AIzaSyBy73pnh_RhFznGf5rjN6WRO5k_LRRjiu4"
     #cx = "018363263888988973222:0u39aymny4g"
@@ -638,7 +640,7 @@ def blacklist(url):
         return 1
 
 def main():
-    with open("zxcv.txt", "r") as file:
+    with open("dataset.txt", "r") as file:
         dataset = file.readlines()
 
     corpus = {}
@@ -647,7 +649,7 @@ def main():
         for row in csv_reader:
             corpus[row[0]] = row[1]
 
-    n = 0
+    n = 100
     #connect_proxy()
     print "n\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\t15\t16\t17"
     while n < len(dataset):
@@ -657,13 +659,12 @@ def main():
             request = urllib2.Request(url, headers = headers)
             status_code = urllib2.urlopen(request).getcode()
 
-            if(status_code == 200):
-                print url
-
+            print n+1, search_engine(url)
             """
             if(status_code == 200):
                 response = urllib2.urlopen(request).read()
                 soup = BeautifulSoup(response)
+
 
                 try:
                     f1 = foreign_anchor(url, soup)
@@ -754,13 +755,12 @@ def main():
                       + str(f6) + "\t" + str(f7) + "\t" + str(f8) + "\t" + str(f9) + "\t" + str(f10) + "\t" \
                       + str(f11) + "\t" + str(f12) + "\t" + str(f13) + "\t" + str(f14) + "\t" + str(f15) + "\t" \
                       + str(f16) + "\t" + str(f17)
-
             else:
                 print "Website tidak aktif"
                 print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
             """
         except urllib2.HTTPError as e:
-            print "HTTP Error:", e
+            print e
             print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
         except urllib2.URLError as e:
             print "URL Error:", e
@@ -773,7 +773,11 @@ def main():
         # time.sleep(5)
 
 if __name__ == "__main__":
-    main()
+    #main()
+    import platform
+    print platform.architecture()
+    #print search_engine("http://fotocerrado.com.br/wp-includes/ID3/oscarp/adobe/adobe/clients/")
+
     """
     corpus = {}
     with open("corpus/WebCorpus2006_min10.txt", "rb") as csv_file:
@@ -781,22 +785,9 @@ if __name__ == "__main__":
         for row in csv_reader:
             corpus[row[0]] = row[1]
 
-    url = "http://www.analistgroup.com/"
+    url = "http://bestsinglespeedbikes.com/wp-includes/pomo/rssspamguardx.htm"
     request = urllib2.Request(url, headers = headers)
     soup = BeautifulSoup(urllib2.urlopen(request).read())
 
     print foreign_anchor_in_id(url, soup, corpus)
-
-    x = "\xe0\xe1\xe2\xe3\xe4"
-
-    print x
-    print str(x)
-
-
-    url = "http://pictureitsoldfl.com"
-    request = urllib2.Request(url, headers = headers)
-    soup = BeautifulSoup(urllib2.urlopen(request).read())
-
-    print soup.find("title")
-
     """
