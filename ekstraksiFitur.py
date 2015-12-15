@@ -776,7 +776,6 @@ if __name__ == "__main__":
     #main()
     import platform
     print platform.architecture()
-    #print search_engine("http://fotocerrado.com.br/wp-includes/ID3/oscarp/adobe/adobe/clients/")
 
     """
     corpus = {}
