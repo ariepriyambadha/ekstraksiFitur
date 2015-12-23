@@ -5,12 +5,17 @@ import urllib2
 import socket
 import requests
 import json
-import time
 import whois
 import nltk
 import csv
 import math
 import ssl
+import weka.core.jvm as jvm
+import time
+
+from weka.classifiers import Classifier, Evaluation
+from weka.core.converters import Loader
+from weka.filters import Filter
 from bs4 import BeautifulSoup
 from lxml import html
 from lxml.html import parse
@@ -34,6 +39,200 @@ def connect_proxy():
     auth = urllib2.HTTPBasicAuthHandler()
     opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
     urllib2.install_opener(opener)
+
+def testing():
+    jvm.start()
+
+    pruning = 0
+    while pruning < 2:
+
+        persen_train = 0
+        while persen_train < 4:
+
+            fitur_hapus = 15
+            while fitur_hapus >= 0:
+
+                list_akurasi = []
+                list_recall = []
+                list_presisi = []
+                list_fmeasure = []
+                list_roc = []
+                count = 0
+
+                nama = "hasilTest/"
+                if(pruning == 0):
+                    nama += "unpruning"
+                    if(persen_train == 0):
+                        nama += "40"
+                    elif(persen_train == 1):
+                        nama += "50"
+                    elif(persen_train == 2):
+                        nama += "60"
+                    else:
+                        nama += "70"
+                else:
+                    nama += "pruning"
+                    if(persen_train == 0):
+                        nama += "40"
+                    elif(persen_train == 1):
+                        nama += "50"
+                    elif(persen_train == 2):
+                        nama += "60"
+                    else:
+                        nama += "70"
+
+                if(fitur_hapus > 0):
+                    nama += "removeF" + str(fitur_hapus) + ".txt"
+                else:
+                    nama += "normal.txt"
+
+                f = open(nama, "w")
+
+                if(pruning == 0):
+                    nama = "unpruning"
+                    f.write("Hasil Decision Tree C4.5 tanpa Pruning (unpruning)\n")
+                    if(persen_train == 0):
+                        nama += "40"
+                        f.write("Dengan Training Set sebesar 40%\n")
+                    elif(persen_train == 1):
+                        nama += "50"
+                        f.write("Dengan Training Set sebesar 50%\n")
+                    elif(persen_train == 2):
+                        nama += "60"
+                        f.write("Dengan Training Set sebesar 60%\n")
+                    else:
+                        nama += "70"
+                        f.write("Dengan Training Set sebesar 70%\n")
+                else:
+                    nama = "pruning"
+                    f.write("Hasil Decision Tree C4.5 Pruning\n")
+                    if(persen_train == 0):
+                        nama += "40"
+                        f.write("Dengan Training Set sebesar 40%\n")
+                    elif(persen_train == 1):
+                        nama += "50"
+                        f.write("Dengan Training Set sebesar 50%\n")
+                    elif(persen_train == 2):
+                        nama += "60"
+                        f.write("Dengan Training Set sebesar 60%\n")
+                    else:
+                        nama += "70"
+                        f.write("Dengan Training Set sebesar 70%\n")
+
+                if(fitur_hapus > 0):
+                    f.write("Menggunakan remove pada fitur " + str(fitur_hapus) + "\n\n")
+                else:
+                    f.write("\n")
+
+                f.write("No. Akurasi Recall Presisi F-Measure ROC\n")
+
+                print "Fitur yang dihapus:", fitur_hapus
+                while count < 100:
+                    loader = Loader(classname = "weka.core.converters.ArffLoader")
+                    data = loader.load_file("hasil.arff")
+                    data.class_is_last()
+
+                    if(fitur_hapus > 0):
+                        remove = Filter(classname = "weka.filters.unsupervised.attribute.Remove", options = ["-R", str(fitur_hapus)])
+                        remove.inputformat(data)
+                        data_baru = remove.filter(data)
+                        data_baru.class_is_last()
+                    else:
+                        data_baru = loader.load_file("hasil.arff")
+                        data_baru.class_is_last()
+
+                    filter = Filter(classname = "weka.filters.unsupervised.instance.Randomize", options = ["-S", str(int(time.time()))])
+                    filter.inputformat(data_baru)
+                    data_random = filter.filter(data_baru)
+                    data_random.class_is_last()
+
+                    if(pruning == 0):
+                        classifier = Classifier(classname = "weka.classifiers.trees.J48", options = ["-U"])
+                    else:
+                        classifier = Classifier(classname = "weka.classifiers.trees.J48", options = ["-C", "0.25"])
+
+                    evaluation = Evaluation(data_random)
+                    if(persen_train == 0):
+                        evaluation.evaluate_train_test_split(classifier, data_random, percentage = 40)
+                    elif(persen_train == 1):
+                        evaluation.evaluate_train_test_split(classifier, data_random, percentage = 50)
+                    elif(persen_train == 2):
+                        evaluation.evaluate_train_test_split(classifier, data_random, percentage = 60)
+                    else:
+                        evaluation.evaluate_train_test_split(classifier, data_random, percentage = 70)
+
+                    f.write(str(count + 1) + str( ". " ) + str(evaluation.weighted_true_positive_rate) + str( " " ) + str(evaluation.weighted_recall) + str( " " ) + str(evaluation.weighted_precision) + str( " " ) + str(evaluation.weighted_f_measure) + str( " " ) + str(evaluation.weighted_area_under_roc) + "\n")
+                    print count + 1, evaluation.weighted_true_positive_rate, evaluation.weighted_recall, evaluation.weighted_precision, evaluation.weighted_f_measure, evaluation.weighted_area_under_roc
+
+                    list_akurasi.append(evaluation.weighted_true_positive_rate)
+                    list_recall.append(evaluation.weighted_recall)
+                    list_presisi.append(evaluation.weighted_precision)
+                    list_fmeasure.append(evaluation.weighted_f_measure)
+                    list_roc.append(evaluation.weighted_area_under_roc)
+
+                    count += 1
+                    time.sleep(1)
+
+                list_akurasi.sort()
+                list_recall.sort()
+                list_presisi.sort()
+                list_fmeasure.sort()
+                list_roc.sort()
+
+                f.write( ""  + "\n")
+                f.write( "Rata-Rata"  + "\n")
+                f.write( "Akurasi:" + str(sum(list_akurasi) / 100.0)  + "\n")
+                f.write( "Recall:" + str(sum(list_recall) / 100.0)  + "\n")
+                f.write( "Presisi:" + str(sum(list_presisi) / 100.0)  + "\n")
+                f.write( "F-Measure:" + str(sum(list_fmeasure) / 100.0)  + "\n")
+                f.write( "ROC:" + str(sum(list_roc) / 100.0)  + "\n")
+                f.write( ""  + "\n")
+                f.write( "Max"  + "\n")
+                f.write( "Akurasi:" + str(list_akurasi[-1] ) + "\n")
+                f.write( "Recall:" + str(list_recall[-1] ) + "\n")
+                f.write( "Presisi:" + str(list_presisi[-1] ) + "\n")
+                f.write( "F-Measure:" + str(list_fmeasure[-1] ) + "\n")
+                f.write( "ROC:" + str(list_roc[-1] ) + "\n")
+                f.write( ""  + "\n")
+                f.write( "Min"  + "\n")
+                f.write( "Akurasi:" + str(list_akurasi[0] ) + "\n")
+                f.write( "Recall:" + str(list_recall[0] ) + "\n")
+                f.write( "Presisi:" + str(list_presisi[0] ) + "\n")
+                f.write( "F-Measure:" + str(list_fmeasure[0] ) + "\n")
+                f.write( "ROC:" + str(list_roc[0] ) + "\n")
+                f.write( ""  + "\n")
+
+                print ""
+                print "Rata-Rata"
+                print "Akurasi:", sum(list_akurasi) / 100.0
+                print "Recall:", sum(list_recall) / 100.0
+                print "Presisi:", sum(list_presisi) / 100.0
+                print "F-Measure:", sum(list_fmeasure) / 100.0
+                print "ROC:", sum(list_roc) / 100.0
+                print ""
+                print "Max"
+                print "Akurasi:", list_akurasi[-1]
+                print "Recall:", list_recall[-1]
+                print "Presisi:", list_presisi[-1]
+                print "F-Measure:", list_fmeasure[-1]
+                print "ROC:", list_roc[-1]
+                print ""
+                print "Min"
+                print "Akurasi:", list_akurasi[0]
+                print "Recall:", list_recall[0]
+                print "Presisi:", list_presisi[0]
+                print "F-Measure:", list_fmeasure[0]
+                print "ROC:", list_roc[0]
+                print ""
+
+                f.close()
+                fitur_hapus -= 1
+
+            persen_train += 1
+
+        pruning += 1
+
+    jvm.stop()
 
 def check_url(url):
     if(urlparse(url).scheme == ""):
@@ -774,19 +973,3 @@ def main():
 
 if __name__ == "__main__":
     #main()
-    import platform
-    print platform.architecture()
-
-    """
-    corpus = {}
-    with open("corpus/WebCorpus2006_min10.txt", "rb") as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter="\t")
-        for row in csv_reader:
-            corpus[row[0]] = row[1]
-
-    url = "http://bestsinglespeedbikes.com/wp-includes/pomo/rssspamguardx.htm"
-    request = urllib2.Request(url, headers = headers)
-    soup = BeautifulSoup(urllib2.urlopen(request).read())
-
-    print foreign_anchor_in_id(url, soup, corpus)
-    """
