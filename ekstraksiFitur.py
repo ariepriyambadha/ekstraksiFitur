@@ -973,3 +973,35 @@ def main():
 
 if __name__ == "__main__":
     #main()
+    jvm.start()
+
+    i = 0
+    rata2 = 0.0
+    while i < 100:
+
+        loader = Loader(classname="weka.core.converters.ArffLoader")
+        data = loader.load_file("hasil.arff")
+        data.class_is_last()
+
+        filter = Filter(classname="weka.filters.unsupervised.instance.Randomize", options=["-S", str(int(time.time()))])
+        filter.inputformat(data)
+        data_random = filter.filter(data)
+        data_random.class_is_last()
+
+        classifier = Classifier(classname="weka.classifiers.trees.J48", options=["-C", "0.25"])
+        evaluation = Evaluation(data)
+
+        #from weka.core.classes import Random
+        #evaluation.crossvalidate_model(classifier, data, 5, Random(int(time.time())))
+        evaluation.evaluate_train_test_split(classifier, data_random, 90)
+        print i + 1, evaluation.weighted_true_positive_rate
+
+        rata2 += evaluation.weighted_true_positive_rate
+
+        time.sleep(1)
+
+        i += 1
+
+    print rata2
+
+    jvm.stop()
