@@ -580,7 +580,7 @@ def foreign_request(url, soup):
 
     # soup applet tag
     applet = soup("applet")
-    for i in object:
+    for i in applet:
         if(i.has_attr("codebase")):
             codebase = i["codebase"]
             if(check_url(codebase) == 1):
@@ -703,7 +703,7 @@ def foreign_request_in_id(url, soup, corpus):
 
     # soup applet tag
     applet = soup("applet")
-    for i in object:
+    for i in applet:
         if(i.has_attr("codebase")):
             codebase = str(i["codebase"]).lower()
 
@@ -838,7 +838,7 @@ def blacklist(url):
     else:
         return 1
 
-def main():
+def ekstraksi_fitur():
     with open("dataset.txt", "r") as file:
         dataset = file.readlines()
 
@@ -848,7 +848,7 @@ def main():
         for row in csv_reader:
             corpus[row[0]] = row[1]
 
-    n = 100
+    n = 0
     #connect_proxy()
     print "n\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\t15\t16\t17"
     while n < len(dataset):
@@ -859,11 +859,10 @@ def main():
             status_code = urllib2.urlopen(request).getcode()
 
             print n+1, search_engine(url)
-            """
+
             if(status_code == 200):
                 response = urllib2.urlopen(request).read()
                 soup = BeautifulSoup(response)
-
 
                 try:
                     f1 = foreign_anchor(url, soup)
@@ -957,7 +956,7 @@ def main():
             else:
                 print "Website tidak aktif"
                 print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
-            """
+
         except urllib2.HTTPError as e:
             print e
             print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
@@ -969,39 +968,7 @@ def main():
             print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
 
         n += 1
-        # time.sleep(5)
 
 if __name__ == "__main__":
-    #main()
-    jvm.start()
-
-    i = 0
-    rata2 = 0.0
-    while i < 100:
-
-        loader = Loader(classname="weka.core.converters.ArffLoader")
-        data = loader.load_file("hasil.arff")
-        data.class_is_last()
-
-        filter = Filter(classname="weka.filters.unsupervised.instance.Randomize", options=["-S", str(int(time.time()))])
-        filter.inputformat(data)
-        data_random = filter.filter(data)
-        data_random.class_is_last()
-
-        classifier = Classifier(classname="weka.classifiers.trees.J48", options=["-C", "0.25"])
-        evaluation = Evaluation(data)
-
-        #from weka.core.classes import Random
-        #evaluation.crossvalidate_model(classifier, data, 5, Random(int(time.time())))
-        evaluation.evaluate_train_test_split(classifier, data_random, 90)
-        print i + 1, evaluation.weighted_true_positive_rate
-
-        rata2 += evaluation.weighted_true_positive_rate
-
-        time.sleep(1)
-
-        i += 1
-
-    print rata2
-
-    jvm.stop()
+    ekstraksi_fitur()
+    testing()
