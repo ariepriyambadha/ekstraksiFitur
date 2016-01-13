@@ -520,7 +520,6 @@ def foreign_request(url, soup):
         tag_string = list_tag[i]
 
         for i in link:
-            print i
             if (i.has_attr(tag_string)):
                 tag = i[tag_string]
                 if (check_url(tag) == 1):
@@ -746,25 +745,25 @@ def foreign_request_in_id(url, soup, corpus):
     list_tag = ["href", "src", "src", "background", "codebase", "codebase"]
 
     for i in range(len(list_x)):
-		link = soup(list_x[i])
-		tag_string = list_tag[i]
+        link = soup(list_x[i])
+        tag_string = list_tag[i]
 
-		for i in link:
-			if(i.has_attr(tag_string)):
-				tag = str(i[tag_string]).lower()
-				if(check_url(tag) == 1):
-						if(tag[:4] == "http"):
-							domain = get_domain(tag)
-							new_domain = domain[:str(domain).find(".")]
+        for i in link:
+            if(i.has_attr(tag_string)):
+                tag = str(i[tag_string]).lower()
+                if(check_url(tag) == 1):
+                    if(tag[:4] == "http"):
+                        domain = get_domain(tag)
+                        new_domain = domain[:str(domain).find(".")]
 
-							if(new_domain not in set_id):
-								return -1
-				elif(tag[:2] == "//"):
-					domain = get_domain(tag)
-					new_domain = domain[:str(domain).find(".")]
+                    if(new_domain not in set_id):
+                        return -1
+                elif(tag[:2] == "//"):
+                    domain = get_domain(tag)
+                    new_domain = domain[:str(domain).find(".")]
 
-					if(new_domain not in set_id):
-						return -1
+                    if(new_domain not in set_id):
+                        return -1
 
     return 1
 
