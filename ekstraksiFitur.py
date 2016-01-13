@@ -513,6 +513,24 @@ def sfh(url, soup):
 
 # Fitur 11: Foreign Request URLs
 def foreign_request(url, soup):
+    list_x = ["link", "script", "img", "body", "object", "applet"]
+    list_tag = ["href", "src", "src", "background", "codebase", "codebase"]
+    for i in range(len(list_x)):
+        link = soup(list_x[i])
+        tag_string = list_tag[i]
+
+        for i in link:
+            print i
+            if (i.has_attr(tag_string)):
+                tag = i[tag_string]
+                if (check_url(tag) == 1):
+                    if (tag[:4] == "http"):
+                        if (get_domain(url) != get_domain(tag)):
+                            return -1
+                elif (tag[:2] == "//"):
+                    if (get_domain(url) != get_domain(tag)):
+                        return -1
+    """
     # soup link tag
     link = soup("link")
     for i in link:
@@ -590,6 +608,7 @@ def foreign_request(url, soup):
             elif(codebase[:2] == "//"):
                 if(get_domain(url) != get_domain(codebase)):
                     return -1
+    """
 
     return 1
 
