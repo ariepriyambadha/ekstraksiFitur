@@ -12,6 +12,7 @@ import math
 import ssl
 import weka.core.jvm as jvm
 import time
+import logging
 
 from weka.classifiers import Classifier, Evaluation
 from weka.core.converters import Loader
@@ -127,6 +128,7 @@ def testing():
                 f.write("No. Akurasi Recall Presisi F-Measure ROC\n")
 
                 print "Fitur yang dihapus:", fitur_hapus
+                print "No.\tAkurasi\tRecall\tPresisi\tF-Measure\tROC"
                 while count < 100:
                     loader = Loader(classname = "weka.core.converters.ArffLoader")
                     data = loader.load_file("hasil.arff")
@@ -328,7 +330,8 @@ def get_identity(url, soup, corpus):
                 domain_anchor = get_domain(anchor)
                 new_domain = domain_anchor[:str(domain_anchor).find(".")]
 
-                tokens.append(new_domain)
+                if(len(new_domain) > 2):
+                    tokens.append(new_domain)
 
     stop_words = set(stopwords.words("english"))
     tmp = ["http", "www", "in", "com", "co", "gov", "net", "org", "int", "edu", "mil"]
@@ -892,6 +895,10 @@ def ekstraksi_fitur():
             corpus[row[0]] = row[1]
 
     n = 0
+
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+
     #connect_proxy()
     print "n\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\t15\t16\t17"
     while n < len(dataset):
@@ -900,8 +907,6 @@ def ekstraksi_fitur():
         try:
             request = urllib2.Request(url, headers = headers)
             status_code = urllib2.urlopen(request).getcode()
-
-            print n+1, search_engine(url)
 
             if(status_code == 200):
                 response = urllib2.urlopen(request).read()
@@ -1013,5 +1018,5 @@ def ekstraksi_fitur():
         n += 1
 
 if __name__ == "__main__":
-    ekstraksi_fitur()
+    #ekstraksi_fitur()
     testing()
