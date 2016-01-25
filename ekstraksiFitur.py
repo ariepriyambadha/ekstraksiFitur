@@ -42,6 +42,10 @@ def connect_proxy():
     urllib2.install_opener(opener)
 
 def testing():
+    logging.disable("weka")
+
+    print "PROSES KLASIFIKASI\n------------------"
+
     jvm.start()
 
     pruning = 0
@@ -91,6 +95,7 @@ def testing():
 
                 if(pruning == 0):
                     nama = "unpruning"
+                    print "Tanpa Pruning"
                     f.write("Hasil Decision Tree C4.5 tanpa Pruning (unpruning)\n")
                     if(persen_train == 0):
                         nama += "40"
@@ -106,6 +111,7 @@ def testing():
                         f.write("Dengan Training Set sebesar 70%\n")
                 else:
                     nama = "pruning"
+                    print "Dengan Pruning"
                     f.write("Hasil Decision Tree C4.5 Pruning\n")
                     if(persen_train == 0):
                         nama += "40"
@@ -127,8 +133,17 @@ def testing():
 
                 f.write("No. Akurasi Recall Presisi F-Measure ROC\n")
 
+                if persen_train == 0:
+                    print "40% Data Training"
+                elif persen_train == 1:
+                    print "50% Data Training"
+                elif persen_train == 2:
+                    print "60% Data Training"
+                else:
+                    print "70% Data Training"
+
                 print "Fitur yang dihapus:", fitur_hapus
-                print "No.\tAkurasi\tRecall\tPresisi\tF-Measure\tROC"
+                print "\nNo.\tAkurasi\tRecall\tPresisi\tF-Measure\tROC"
                 while count < 100:
                     loader = Loader(classname = "weka.core.converters.ArffLoader")
                     data = loader.load_file("hasil.arff")
@@ -401,22 +416,14 @@ def nil_anchor(soup):
 
     return 1
 
-# Fitur 3: IP Address
-def ip_addr(url):
-    try:
-        socket.inet_aton(urlparse(url).netloc)
-        return -1
-    except:
-        return 1
-
-# Fitur 4: Dots in Page Address
+# Fitur 3: Dots in Page Address
 def dots_page_addr(url):
     if(url.count(".") > 5):
         return -1
     else:
         return 1
 
-# Fitur 5: Dots in URLs
+# Fitur 4: Dots in URLs
 def dots_url(url):
     request = urllib2.Request(url, headers = headers)
     htmldoc = parse(urllib2.urlopen(request)).getroot()
@@ -435,14 +442,14 @@ def dots_url(url):
     else:
         return 1
 
-# Fitur 6: Slash in Page Address
+# Fitur 5: Slash in Page Address
 def slash_page_addr(url):
     if(url.count("/") > 5):
         return -1
     else:
         return 1
 
-# Fitur 7: Slash in URLs
+# Fitur 6: Slash in URLs
 def slash_url(url):
     request = urllib2.Request(url, headers = headers)
     htmldoc = parse(urllib2.urlopen(request)).getroot()
@@ -460,7 +467,7 @@ def slash_url(url):
     else:
         return 1
 
-# Fitur 8: Foreign Anchor in Identity Set
+# Fitur 7: Foreign Anchor in Identity Set
 def foreign_anchor_in_id(url, soup, corpus):
     set_id = get_identity(url, soup, corpus)
     anchor = soup("a")
@@ -486,14 +493,7 @@ def foreign_anchor_in_id(url, soup, corpus):
 
     return 1
 
-# Fitur 9: Using @ Symbol
-def at_symbol(url):
-    if(str(urlparse(url).netloc).find("@") > 0):
-        return -1
-    else:
-        return 1
-
-# Fitur 10: Server Form Handler(SFH)
+# Fitur 8: Server Form Handler(SFH)
 def sfh(url, soup):
     form = soup("form")
 
@@ -514,7 +514,7 @@ def sfh(url, soup):
 
     return 1
 
-# Fitur 11: Foreign Request URLs
+# Fitur 9: Foreign Request URLs
 def foreign_request(url, soup):
     list_x = ["link", "script", "img", "body", "object", "applet"]
     list_tag = ["href", "src", "src", "background", "codebase", "codebase"]
@@ -614,7 +614,7 @@ def foreign_request(url, soup):
 
     return 1
 
-# Fitur 12: Foreign Request in Identity Set
+# Fitur 10: Foreign Request in Identity Set
 def foreign_request_in_id(url, soup, corpus):
     set_id = get_identity(url, soup, corpus)
 
@@ -770,7 +770,7 @@ def foreign_request_in_id(url, soup, corpus):
 
     return 1
 
-# Fitur 13: Cookie
+# Fitur 11: Cookie
 def cookies(url):
     request = requests.get(url, headers = headers)
     list_cookies = request.cookies.list_domains()
@@ -787,7 +787,7 @@ def cookies(url):
 
     return 1
 
-# Fitur 14: SSL Sertifikat
+# Fitur 12: SSL Sertifikat
 def ssl_cert(url):
     if(url[:5] == "https"):
         return 1
@@ -824,10 +824,10 @@ def ssl_cert(url):
     else:
         return -1
 
-# Fitur 15: Search Engine
+# Fitur 13: Search Engine
 def search_engine(url):
-    key_api = "AIzaSyBE9jGvAy8fMWCnUd9EN8UnGw5DXxLww7s"
-    cx = "018159697673271901985:8vkit3okjjk"
+    key_api = "AIzaSyBy73pnh_RhFznGf5rjN6WRO5k_LRRjiu4"
+    cx = "018363263888988973222:0u39aymny4g"
 
     #key_api = "AIzaSyBy73pnh_RhFznGf5rjN6WRO5k_LRRjiu4"
     #cx = "018363263888988973222:0u39aymny4g"
@@ -859,7 +859,7 @@ def search_engine(url):
     else:
         return -1
 
-# Fitur 16: Whois Lookup
+# Fitur 14: Whois Lookup
 def whois_lookup(url):
     url_parse = urlparse(url)
     new_url = str(url_parse.scheme) + "://" + str(url_parse.netloc)
@@ -870,7 +870,7 @@ def whois_lookup(url):
     except:
         return -1
 
-# Fitur 17: Blacklist
+# Fitur 15: Blacklist
 def blacklist(url):
     url = quote(url, safe="")
     request_url = "https://sb-ssl.google.com/safebrowsing/api/lookup?client=skripsi_phishing&key=" \
@@ -899,10 +899,13 @@ def ekstraksi_fitur():
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
 
+    print "PROSES EKSTRAKSI FITUR\n----------------------"
+
     #connect_proxy()
-    print "n\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\t15\t16\t17"
+    #print "n\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\t15"
     while n < len(dataset):
         url = dataset[n].rstrip("\n")
+        print n+1, url
 
         try:
             request = urllib2.Request(url, headers = headers)
@@ -923,97 +926,94 @@ def ekstraksi_fitur():
                     f2 = 0
 
                 try:
-                    f3 = ip_addr(url)
+                    f3 = dots_page_addr(url)
                 except:
                     f3 = 0
 
                 try:
-                    f4 = dots_page_addr(url)
+                    f4 = dots_url(url)
                 except:
                     f4 = 0
 
                 try:
-                    f5 = dots_url(url)
+                    f5 = slash_page_addr(url)
                 except:
                     f5 = 0
 
                 try:
-                    f6 = slash_page_addr(url)
+                    f6 = slash_url(url)
                 except:
                     f6 = 0
 
                 try:
-                    f7 = slash_url(url)
+                    f7 = foreign_anchor_in_id(url, soup, corpus)
                 except:
                     f7 = 0
 
                 try:
-                    f8 = foreign_anchor_in_id(url, soup, corpus)
+                    f8 = sfh(url, soup)
                 except:
                     f8 = 0
 
                 try:
-                    f9 = at_symbol(url)
+                    f9 = foreign_request(url, soup)
                 except:
                     f9 = 0
 
                 try:
-                    f10 = sfh(url, soup)
+                    f10 = foreign_anchor_in_id(url, soup, corpus)
                 except:
                     f10 = 0
 
                 try:
-                    f11 = foreign_request(url, soup)
+                    f11 = cookies(url)
                 except:
                     f11 = 0
 
                 try:
-                    f12 = foreign_anchor_in_id(url, soup, corpus)
+                    f12 = ssl_cert(url)
                 except:
                     f12 = 0
 
                 try:
-                    f13 = cookies(url)
+                    f13 = search_engine(url)
                 except:
                     f13 = 0
 
                 try:
-                    f14 = ssl_cert(url)
+                    f14 = whois_lookup(url)
                 except:
                     f14 = 0
 
                 try:
-                    f15 = search_engine(url)
+                    f15 = blacklist(url)
                 except:
                     f15 = 0
 
-                try:
-                    f16 = whois_lookup(url)
-                except:
-                    f16 = 0
+                print str(f1) + "," + str(f2) + "," + str(f3) + "," + str(f4) + "," + str(f5) + "," \
+                      + str(f6) + "," + str(f7) + "," + str(f8) + "," + str(f9) + "," + str(f10) + "," \
+                      + str(f11) + "," + str(f12) + "," + str(f13) + "," + str(f14) + "," + str(f15)
 
-                try:
-                    f17 = blacklist(url)
-                except:
-                    f17 = 0
-
-                print str(n + 1) + "\t" + str(f1) + "\t" + str(f2) + "\t" + str(f3) + "\t" + str(f4) + "\t" + str(f5) + "\t" \
-                      + str(f6) + "\t" + str(f7) + "\t" + str(f8) + "\t" + str(f9) + "\t" + str(f10) + "\t" \
-                      + str(f11) + "\t" + str(f12) + "\t" + str(f13) + "\t" + str(f14) + "\t" + str(f15) + "\t" \
-                      + str(f16) + "\t" + str(f17)
+                #print str(n + 1) + "\t" + str(f1) + "\t" + str(f2) + "\t" + str(f3) + "\t" + str(f4) + "\t" + str(f5) + "\t" \
+                #      + str(f6) + "\t" + str(f7) + "\t" + str(f8) + "\t" + str(f9) + "\t" + str(f10) + "\t" \
+                #      + str(f11) + "\t" + str(f12) + "\t" + str(f13) + "\t" + str(f14) + "\t" + str(f15) + "\t"
             else:
                 print "Website tidak aktif"
-                print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
+                print "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
+                #print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
 
         except urllib2.HTTPError as e:
             print e
-            print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
+            print "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
+            #print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
         except urllib2.URLError as e:
             print "URL Error:", e
-            print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
+            print "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
+            #print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
         except socket.error as e:
             print "Socket Error:", e
-            print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
+            print "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
+            #print str(n + 1) + "\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0"
 
         n += 1
 
